@@ -68,7 +68,7 @@ def register():
         return jsonify({"error": "field 'serial_number' is required and must be a non-empty string"}), 400
 
     db = database_handler.DatabaseHandler()
-
+    #db.create_user_table()
     db.addUser(mac_address, serial_number)
 
     db.create_letter_table(serial_number)

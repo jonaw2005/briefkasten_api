@@ -36,6 +36,8 @@ class DatabaseHandler:
         self.conn = sqlite3.connect(self.db_path, detect_types=sqlite3.PARSE_DECLTYPES)
         self.conn.row_factory = sqlite3.Row
 
+        self.create_user_table()
+
     def close(self) -> None:
         if self.conn:
             self.conn.close()
@@ -90,7 +92,7 @@ class DatabaseHandler:
         rows = cur.fetchall()
         return [dict(row) for row in rows]
 
-    def create_user_table(self, mac: str, ser: str) -> None:
+    def create_user_table(self) -> None:
         """
         Create a 'users' table with id, username, email, created_at.
         """
