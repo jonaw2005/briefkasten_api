@@ -53,9 +53,11 @@ def servo_close():
 
 
 def taster_callback(chip, gpio, level, tick):
+    print("Taster gedrückt!")
     led_red()
 
 def lichtschranke_callback(chip, gpio, level, tick):
+    print("Lichtschranke unterbrochen!")
     led_green()
 
 
