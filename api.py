@@ -3,6 +3,7 @@ from uuid import uuid4
 from datetime import datetime, timezone
 import time
 import re
+import threading
 
 import database_handler
 
@@ -15,8 +16,8 @@ _users = {}
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
-global entriegeln
-entriegeln = False
+entriegeln_flag = False
+entriegeln_lock = threading.Lock()
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
@@ -107,7 +108,9 @@ def entriegeln():
     if not isinstance(serial_number, str) or not serial_number:
         return jsonify({"error": "field 'serial_number' is required and must be a non-empty string"}), 400
     
-    entriegeln = True
+    global entriegeln_flag
+    with entriegeln_lock:
+        entriegeln_flag = True
     return jsonify({"status": "entriegeln set to true"}), 200
 
 
@@ -120,12 +123,14 @@ def frage_entriegeln():
     if not isinstance(serial_number, str) or not serial_number:
         return jsonify({"error": "field 'serial_number' is required and must be a non-empty string"}), 400
     
-    #global entriegeln
-    if entriegeln:
-        entriegeln = False
-        return jsonify({"entriegeln": True}), 200
-    else:
-        return jsonify({"entriegeln": False}), 200
+    global entriegeln_flag
+    with entriegeln_lock:
+        entriegeln = entriegeln_flag
+        if entriegeln_flag:
+            entriegeln_flag = False
+            return jsonify({"entriegeln": True}), 200
+        else:
+            return jsonify({"entriegeln": False}), 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
