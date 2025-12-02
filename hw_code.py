@@ -1,4 +1,4 @@
-import RPi.GPIO as GPIO
+import lgpio
 import time
 #https://github.com/jonaw2005/briefkasten_api.git
 
@@ -9,70 +9,65 @@ LED_GREEN_PIN = 22
 SERVO_PIN = 23
 TASTER_PIN = 24
 LICHTSCHRANKE_PIN = 25
-#GND_PIN = 5
-
-GPIO.setwarnings(False)
-
 
 # GPIO SETUP
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(LED_RED_PIN, GPIO.OUT)
-GPIO.setup(LED_YELLOW_PIN, GPIO.OUT)
-GPIO.setup(LED_GREEN_PIN, GPIO.OUT)
-GPIO.setup(SERVO_PIN, GPIO.OUT)
-GPIO.setup(TASTER_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(LICHTSCHRANKE_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+h = lgpio.gpiochip_open(0)  # Öffne den GPIO-Chip
 
-# SERVO SETUP
-servo_pwm = GPIO.PWM(SERVO_PIN, 50)  # 50 Hz Frequenz für Standard-Servos
-servo_pwm.start(0)
+# Output Pins setzen
+lgpio.gpio_claim_output(h, LED_RED_PIN)
+lgpio.gpio_claim_output(h, LED_YELLOW_PIN)
+lgpio.gpio_claim_output(h, LED_GREEN_PIN)
+lgpio.gpio_claim_output(h, SERVO_PIN)
 
+# Input Pins setzen
+lgpio.gpio_claim_input(h, TASTER_PIN)
+lgpio.gpio_claim_input(h, LICHTSCHRANKE_PIN)
+
+# SERVO SETUP (PWM)
+servo_pwm = lgpio.tx_pwm(h, SERVO_PIN, 20000, 0)  # 50 Hz = 20ms Period
 
 
 def led_red():
-    GPIO.output(LED_RED_PIN, GPIO.HIGH)
+    lgpio.gpio_write(h, LED_RED_PIN, 1)
 
 def led_yellow():
-    GPIO.output(LED_YELLOW_PIN, GPIO.HIGH)
+    lgpio.gpio_write(h, LED_YELLOW_PIN, 1)
 
 def led_green():
-    GPIO.output(LED_GREEN_PIN, GPIO.HIGH)
+    lgpio.gpio_write(h, LED_GREEN_PIN, 1)
 
 def led_off():
-    GPIO.output(LED_RED_PIN, GPIO.LOW)
-    GPIO.output(LED_YELLOW_PIN, GPIO.LOW)
-    GPIO.output(LED_GREEN_PIN, GPIO.LOW)
+    lgpio.gpio_write(h, LED_RED_PIN, 0)
+    lgpio.gpio_write(h, LED_YELLOW_PIN, 0)
+    lgpio.gpio_write(h, LED_GREEN_PIN, 0)
 
 
 def servo_open():
-    # 180 Grad: Duty Cycle ~12%
-    servo_pwm.ChangeDutyCycle(12)
+    # 180 Grad: ~2.4ms Puls bei 50Hz
+    lgpio.tx_pwm(h, SERVO_PIN, 20000, 2400)
     time.sleep(0.5)
 
 def servo_close():
-    # 0 Grad: Duty Cycle ~3%
-    servo_pwm.ChangeDutyCycle(3)
+    # 0 Grad: ~0.6ms Puls bei 50Hz
+    lgpio.tx_pwm(h, SERVO_PIN, 20000, 600)
     time.sleep(0.5)
 
 
-def taster_callback():
+def taster_callback(chip, gpio, level, tick):
     led_red()
 
-
-
-def lichtschranke_callback():
+def lichtschranke_callback(chip, gpio, level, tick):
     led_green()
 
 
 def setup_callbacks():
-    GPIO.remove_event_detect(TASTER_PIN)
-    GPIO.remove_event_detect(LICHTSCHRANKE_PIN)
+    lgpio.gpio_claim_alert(h, TASTER_PIN, lgpio.FALLING_EDGE, None)
+    lgpio.gpio_claim_alert(h, LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE, None)
+    
+    lgpio.callback(h, TASTER_PIN, lgpio.FALLING_EDGE, taster_callback)
+    lgpio.callback(h, LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE, lichtschranke_callback)
 
-    GPIO.add_event_detect(TASTER_PIN, GPIO.FALLING, callback=lambda channel: taster_callback(), bouncetime=300)
-    GPIO.add_event_detect(LICHTSCHRANKE_PIN, GPIO.FALLING, callback=lambda channel: lichtschranke_callback(), bouncetime=300)
 
-
-# test
 def test():
     while True:
         led_red()
@@ -95,5 +90,7 @@ def test_callbacks():
             time.sleep(1)
     except KeyboardInterrupt:
         pass
+    finally:
+        lgpio.gpiochip_close(h)
 
 test_callbacks()
