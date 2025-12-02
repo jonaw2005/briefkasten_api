@@ -15,6 +15,7 @@ _users = {}
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
+global entriegeln
 entriegeln = False
 
 def now_iso():
@@ -119,7 +120,7 @@ def frage_entriegeln():
     if not isinstance(serial_number, str) or not serial_number:
         return jsonify({"error": "field 'serial_number' is required and must be a non-empty string"}), 400
     
-    global entriegeln
+    #global entriegeln
     if entriegeln:
         entriegeln = False
         return jsonify({"entriegeln": True}), 200
