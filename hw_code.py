@@ -17,7 +17,8 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(LED_RED_PIN, GPIO.OUT)
 GPIO.setup(LED_YELLOW_PIN, GPIO.OUT)
 GPIO.setup(LED_GREEN_PIN, GPIO.OUT)
-
+GPIO.setup(TASTER_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(LICHTSCHRANKE_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # SERVO SETUP
 servo_pwm = GPIO.PWM(SERVO_PIN, 50)  # 50 Hz Frequenz für Standard-Servos
@@ -52,12 +53,23 @@ def servo_close():
 
 
 def taster_callback():
-    pass
+    led_red()
 
 
 
 def lichtschranke_callback():
-    pass
+    led_green()
 
 
 
+
+# test
+while True:
+    led_red()
+    time.sleep(5)
+    led_yellow()
+    time.sleep(5)
+    led_green()
+    time.sleep(5)
+    led_off()
+    time.sleep(5)
