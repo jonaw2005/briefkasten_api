@@ -94,4 +94,5 @@ def test_callbacks():
     finally:
         lgpio.gpiochip_close(h)
 
-test_callbacks()
+#test_callbacks()
+test()
