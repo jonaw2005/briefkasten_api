@@ -11,18 +11,21 @@ TASTER_PIN = 24
 LICHTSCHRANKE_PIN = 25
 #GND_PIN = 5
 
+GPIO.setwarnings(False)
+
 
 # GPIO SETUP
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(LED_RED_PIN, GPIO.OUT)
 GPIO.setup(LED_YELLOW_PIN, GPIO.OUT)
 GPIO.setup(LED_GREEN_PIN, GPIO.OUT)
-#GPIO.setup(TASTER_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-#GPIO.setup(LICHTSCHRANKE_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(SERVO_PIN, GPIO.OUT)
+GPIO.setup(TASTER_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(LICHTSCHRANKE_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # SERVO SETUP
-#servo_pwm = GPIO.PWM(SERVO_PIN, 50)  # 50 Hz Frequenz für Standard-Servos
-#servo_pwm.start(0)
+servo_pwm = GPIO.PWM(SERVO_PIN, 50)  # 50 Hz Frequenz für Standard-Servos
+servo_pwm.start(0)
 
 
 
@@ -43,12 +46,12 @@ def led_off():
 
 def servo_open():
     # 180 Grad: Duty Cycle ~12%
-    #servo_pwm.ChangeDutyCycle(12)
+    servo_pwm.ChangeDutyCycle(12)
     time.sleep(0.5)
 
 def servo_close():
     # 0 Grad: Duty Cycle ~3%
-    #servo_pwm.ChangeDutyCycle(3)
+    servo_pwm.ChangeDutyCycle(3)
     time.sleep(0.5)
 
 
@@ -61,15 +64,33 @@ def lichtschranke_callback():
     led_green()
 
 
+def setup_callbacks():
+    GPIO.add_event_detect(TASTER_PIN, GPIO.FALLING, callback=lambda channel: taster_callback(), bouncetime=300)
+    GPIO.add_event_detect(LICHTSCHRANKE_PIN, GPIO.FALLING, callback=lambda channel: lichtschranke_callback(), bouncetime=300)
 
 
 # test
-while True:
-    led_red()
-    time.sleep(5)
-    led_yellow()
-    time.sleep(5)
-    led_green()
-    time.sleep(5)
-    led_off()
-    time.sleep(5)
+def test():
+    while True:
+        led_red()
+        time.sleep(5)
+        led_yellow()
+        time.sleep(5)
+        led_green()
+        time.sleep(5)
+        led_off()
+        time.sleep(5)
+        servo_open()
+        time.sleep(2)
+        servo_close()
+        time.sleep(2)
+
+def test_callbacks():
+    setup_callbacks()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        pass
+
+test_callbacks()
