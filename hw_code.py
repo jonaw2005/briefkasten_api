@@ -44,6 +44,8 @@ class BriefkastenHW:
         lgpio.gpio_claim_input(self.h, self.TASTER_PIN)
         lgpio.gpio_claim_input(self.h, self.LICHTSCHRANKE_PIN)
         
+        self.setup_callbacks()
+
         self._initialized = True
     
     def led_red(self):
