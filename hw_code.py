@@ -60,8 +60,8 @@ def lichtschranke_callback(chip, gpio, level, tick):
 
 
 def setup_callbacks():
-    lgpio.gpio_claim_alert(h, TASTER_PIN, lgpio.FALLING_EDGE, None)
-    lgpio.gpio_claim_alert(h, LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE, None)
+    lgpio.gpio_claim_alert(h, TASTER_PIN, lgpio.FALLING_EDGE)
+    lgpio.gpio_claim_alert(h, LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE)
     
     lgpio.callback(h, TASTER_PIN, lgpio.FALLING_EDGE, taster_callback)
     lgpio.callback(h, LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE, lichtschranke_callback)
