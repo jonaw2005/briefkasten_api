@@ -24,7 +24,7 @@ lgpio.gpio_claim_input(h, TASTER_PIN)
 lgpio.gpio_claim_input(h, LICHTSCHRANKE_PIN)
 
 # SERVO SETUP (PWM)
-servo_pwm = lgpio.tx_pwm(h, SERVO_PIN, 20000, 0)  # 50 Hz = 20ms Period
+servo_pwm = lgpio.tx_pwm(h, SERVO_PIN, 20000, 1500)  # 50 Hz = 20ms Period
 
 
 def led_red():
