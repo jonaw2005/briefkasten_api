@@ -23,8 +23,7 @@ lgpio.gpio_claim_output(h, SERVO_PIN)
 lgpio.gpio_claim_input(h, TASTER_PIN)
 lgpio.gpio_claim_input(h, LICHTSCHRANKE_PIN)
 
-# SERVO SETUP (PWM)
-servo_pwm = lgpio.tx_pwm(h, SERVO_PIN, 20000, 1500)  # 50 Hz = 20ms Period
+# SERVO SETUP (PWM) - Wird in den Funktionen initialisiert
 
 
 def led_red():
@@ -43,12 +42,12 @@ def led_off():
 
 
 def servo_open():
-    # 180 Grad: ~2.4ms Puls bei 50Hz
+    # 180 Grad: ~2.4ms Puls bei 50Hz (20ms Periode)
     lgpio.tx_pwm(h, SERVO_PIN, 20000, 2400)
     time.sleep(0.5)
 
 def servo_close():
-    # 0 Grad: ~0.6ms Puls bei 50Hz
+    # 0 Grad: ~0.6ms Puls bei 50Hz (20ms Periode)
     lgpio.tx_pwm(h, SERVO_PIN, 20000, 600)
     time.sleep(0.5)
 
