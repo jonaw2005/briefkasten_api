@@ -15,6 +15,7 @@ _users = {}
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
+entriegeln = False
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
@@ -93,6 +94,36 @@ def new_letter():
     db.addLetter(serial_number, time)
 
     return jsonify({"status": "letter added"}), 201
+
+
+# MAC nicht Serial Number !!!!
+@app.route("/entriegeln", methods=["POST"])
+def entriegeln():
+    if not request.is_json:
+        return jsonify({"error": "expected JSON"}), 400
+    data = request.get_json()
+    serial_number = data.get("serial_number")
+    if not isinstance(serial_number, str) or not serial_number:
+        return jsonify({"error": "field 'serial_number' is required and must be a non-empty string"}), 400
+    
+    entriegeln = True
+    return jsonify({"status": "entriegeln set to true"}), 200
+
+
+@app.route("/frage_entriegeln", methods=["POST"])
+def frage_entriegeln():
+    if not request.is_json:
+        return jsonify({"error": "expected JSON"}), 400
+    data = request.get_json()
+    serial_number = data.get("serial_number")
+    if not isinstance(serial_number, str) or not serial_number:
+        return jsonify({"error": "field 'serial_number' is required and must be a non-empty string"}), 400
+    
+    if entriegeln:
+        entriegeln = False
+        return jsonify({"entriegeln": True}), 200
+    else:
+        return jsonify({"entriegeln": False}), 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

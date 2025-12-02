@@ -1,107 +1,138 @@
 import lgpio
 import time
-#https://github.com/jonaw2005/briefkasten_api.git
+import connector
+import datetime
+import requests
 
-# PIN ASSIGNMENTS
-LED_RED_PIN = 17
-LED_YELLOW_PIN = 27
-LED_GREEN_PIN = 22
-SERVO_PIN = 23
-TASTER_PIN = 24
-LICHTSCHRANKE_PIN = 25
-
-# GPIO SETUP
-h = lgpio.gpiochip_open(0)  # Öffne den GPIO-Chip
-
-# Output Pins setzen
-lgpio.gpio_claim_output(h, LED_RED_PIN)
-lgpio.gpio_claim_output(h, LED_YELLOW_PIN)
-lgpio.gpio_claim_output(h, LED_GREEN_PIN)
-lgpio.gpio_claim_output(h, SERVO_PIN)
-
-# Input Pins setzen
-lgpio.gpio_claim_input(h, TASTER_PIN)
-lgpio.gpio_claim_input(h, LICHTSCHRANKE_PIN)
-
-# SERVO SETUP (PWM) - Wird in den Funktionen initialisiert
-
-
-def led_red():
-    lgpio.gpio_write(h, LED_RED_PIN, 1)
-
-def led_yellow():
-    lgpio.gpio_write(h, LED_YELLOW_PIN, 1)
-
-def led_green():
-    lgpio.gpio_write(h, LED_GREEN_PIN, 1)
-
-def led_off():
-    lgpio.gpio_write(h, LED_RED_PIN, 0)
-    lgpio.gpio_write(h, LED_YELLOW_PIN, 0)
-    lgpio.gpio_write(h, LED_GREEN_PIN, 0)
-
-
-def send_servo_pulse(pulse_us, duration_s=0.5, period_us=20000):
-    """Sende software-gesteuerte PWM-Pulse (pulse_us in µs) für duration_s Sekunden."""
-    end = time.time() + duration_s
-    while time.time() < end:
-        lgpio.gpio_write(h, SERVO_PIN, 1)
-        time.sleep(pulse_us / 1_000_000.0)
-        lgpio.gpio_write(h, SERVO_PIN, 0)
-        time.sleep((period_us - pulse_us) / 1_000_000.0)
-    # sicherstellen, dass Pin am Ende low ist
-    lgpio.gpio_write(h, SERVO_PIN, 0)
-
-def servo_open():
-    # ~2.4ms Puls für Richtung "offen"
-    send_servo_pulse(2400, duration_s=0.6)
-
-def servo_close():
-    # ~0.6ms Puls für Richtung "geschlossen"
-    send_servo_pulse(600, duration_s=0.6)
-
-
-def taster_callback(chip, gpio, level, tick):
-    print("Taster gedrückt!")
-    led_red()
-
-def lichtschranke_callback(chip, gpio, level, tick):
-    print("Lichtschranke unterbrochen!")
-    led_green()
-
-
-def setup_callbacks():
-    lgpio.gpio_claim_alert(h, TASTER_PIN, lgpio.FALLING_EDGE)
-    lgpio.gpio_claim_alert(h, LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE)
+class BriefkastenHW:
+    """Singleton-Klasse für Briefkasten Hardware-Steuerung"""
+    _instance = None
     
-    lgpio.callback(h, TASTER_PIN, lgpio.FALLING_EDGE, taster_callback)
-    lgpio.callback(h, LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE, lichtschranke_callback)
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(BriefkastenHW, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+    
+    def __init__(self):
+        if self._initialized:
+            return
+        
+
+        self.serial_number = "SN123456"
+        self.api = "http://localhost:5000"
 
 
-def test():
-    while True:
-        led_red()
-        time.sleep(5)
-        led_yellow()
-        time.sleep(5)
-        led_green()
-        time.sleep(5)
-        led_off()
-        time.sleep(5)
-        servo_open()
+        # PIN ASSIGNMENTS
+        self.LED_RED_PIN = 17
+        self.LED_YELLOW_PIN = 27
+        self.LED_GREEN_PIN = 22
+        self.SERVO_PIN = 23
+        self.TASTER_PIN = 24
+        self.LICHTSCHRANKE_PIN = 25
+        
+        # GPIO SETUP
+        self.h = lgpio.gpiochip_open(0)
+        
+        # Output Pins setzen
+        lgpio.gpio_claim_output(self.h, self.LED_RED_PIN)
+        lgpio.gpio_claim_output(self.h, self.LED_YELLOW_PIN)
+        lgpio.gpio_claim_output(self.h, self.LED_GREEN_PIN)
+        lgpio.gpio_claim_output(self.h, self.SERVO_PIN)
+        
+        # Input Pins setzen
+        lgpio.gpio_claim_input(self.h, self.TASTER_PIN)
+        lgpio.gpio_claim_input(self.h, self.LICHTSCHRANKE_PIN)
+        
+        self._initialized = True
+    
+    def led_red(self):
+        lgpio.gpio_write(self.h, self.LED_RED_PIN, 1)
+    
+    def led_yellow(self):
+        lgpio.gpio_write(self.h, self.LED_YELLOW_PIN, 1)
+    
+    def led_green(self):
+        lgpio.gpio_write(self.h, self.LED_GREEN_PIN, 1)
+    
+    def led_off(self):
+        lgpio.gpio_write(self.h, self.LED_RED_PIN, 0)
+        lgpio.gpio_write(self.h, self.LED_YELLOW_PIN, 0)
+        lgpio.gpio_write(self.h, self.LED_GREEN_PIN, 0)
+    
+    def send_servo_pulse(self, pulse_us, duration_s=0.5, period_us=20000):
+        """Sende software-gesteuerte PWM-Pulse"""
+        end = time.time() + duration_s
+        while time.time() < end:
+            lgpio.gpio_write(self.h, self.SERVO_PIN, 1)
+            time.sleep(pulse_us / 1_000_000.0)
+            lgpio.gpio_write(self.h, self.SERVO_PIN, 0)
+            time.sleep((period_us - pulse_us) / 1_000_000.0)
+        lgpio.gpio_write(self.h, self.SERVO_PIN, 0)
+    
+    def servo_open(self):
+        self.send_servo_pulse(2400, duration_s=0.6)
+    
+    def servo_close(self):
+        self.send_servo_pulse(600, duration_s=0.6)
+    
+    def taster_callback(self, chip, gpio, level, tick):
+        print("Taster gedrückt!")
+        connector.klappe_geoeffnet()
+        self.led_red()
+    
+    def lichtschranke_callback(self, chip, gpio, level, tick):
+        print("Lichtschranke unterbrochen!")
+        self.led_green()
+        self.brief_eingeworfen()
         time.sleep(2)
-        servo_close()
-        time.sleep(2)
-
-def test_callbacks():
-    setup_callbacks()
-    try:
+        self.led_off()
+    
+    def setup_callbacks(self):
+        lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE)
+        lgpio.gpio_claim_alert(self.h, self.LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE)
+        
+        lgpio.callback(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE, self.taster_callback)
+        lgpio.callback(self.h, self.LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE, self.lichtschranke_callback)
+    
+    def test(self):
         while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        lgpio.gpiochip_close(h)
+            self.led_red()
+            time.sleep(5)
+            self.led_yellow()
+            time.sleep(5)
+            self.led_green()
+            time.sleep(5)
+            self.led_off()
+            time.sleep(5)
+            self.servo_open()
+            time.sleep(2)
+            self.servo_close()
+            time.sleep(2)
+    
+    def test_callbacks(self):
+        self.setup_callbacks()
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            lgpio.gpiochip_close(self.h)
+    
+    def cleanup(self):
+        lgpio.gpiochip_close(self.h)
 
-#test_callbacks()
-test()
+
+    def brief_eingeworfen(self):
+        timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        response = requests.post(f"{self.api}/new_letter", json={"serial_number": self.serial_number, "time": timestamp})
+        print("Brief eingeworfen:", response.json())
+        return response.json()
+
+    def klappe_geoeffnet(self):
+        print("Klappe wurde geöffnet.")
+        return
+
+# Globale Instanz
+hw = BriefkastenHW()
