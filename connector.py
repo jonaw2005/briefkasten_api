@@ -38,3 +38,4 @@ def klappe_geoeffnet():
     pass
 
 
+entriegeln_loop()
