@@ -23,8 +23,8 @@ def entriegeln_loop():
 
 
 def entriegeln():
-    response = requests.post(f"{api}/frage_entriegeln", json={"serial_number": serial_number})
-    return response.json().get("entriegeln", False)
+    response = requests.post(f"{api}/frage_entriegeln", json={"serial_number": serial_number}).json()
+    return response.get("entriegeln", False)
 
 
 
