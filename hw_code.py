@@ -41,15 +41,24 @@ def led_off():
     lgpio.gpio_write(h, LED_GREEN_PIN, 0)
 
 
+def send_servo_pulse(pulse_us, duration_s=0.5, period_us=20000):
+    """Sende software-gesteuerte PWM-Pulse (pulse_us in µs) für duration_s Sekunden."""
+    end = time.time() + duration_s
+    while time.time() < end:
+        lgpio.gpio_write(h, SERVO_PIN, 1)
+        time.sleep(pulse_us / 1_000_000.0)
+        lgpio.gpio_write(h, SERVO_PIN, 0)
+        time.sleep((period_us - pulse_us) / 1_000_000.0)
+    # sicherstellen, dass Pin am Ende low ist
+    lgpio.gpio_write(h, SERVO_PIN, 0)
+
 def servo_open():
-    # 180 Grad: ~2.4ms Puls bei 50Hz (20ms Periode)
-    lgpio.tx_pwm(h, SERVO_PIN, 20000, 2400)
-    time.sleep(0.5)
+    # ~2.4ms Puls für Richtung "offen"
+    send_servo_pulse(2400, duration_s=0.6)
 
 def servo_close():
-    # 0 Grad: ~0.6ms Puls bei 50Hz (20ms Periode)
-    lgpio.tx_pwm(h, SERVO_PIN, 20000, 600)
-    time.sleep(0.5)
+    # ~0.6ms Puls für Richtung "geschlossen"
+    send_servo_pulse(600, duration_s=0.6)
 
 
 def taster_callback(chip, gpio, level, tick):
