@@ -65,6 +65,9 @@ def lichtschranke_callback():
 
 
 def setup_callbacks():
+    GPIO.remove_event_detect(TASTER_PIN)
+    GPIO.remove_event_detect(LICHTSCHRANKE_PIN)
+
     GPIO.add_event_detect(TASTER_PIN, GPIO.FALLING, callback=lambda channel: taster_callback(), bouncetime=300)
     GPIO.add_event_detect(LICHTSCHRANKE_PIN, GPIO.FALLING, callback=lambda channel: lichtschranke_callback(), bouncetime=300)
 
