@@ -1,6 +1,5 @@
 import lgpio
 import time
-import connector
 import datetime
 import requests
 
