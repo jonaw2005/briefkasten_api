@@ -84,7 +84,7 @@ class BriefkastenHW:
         self.open = False
         self.send_servo_pulse(500, duration_s=0.6)
     
-    def taster_geschlossen_callback(self, chip, gpio, level, tick):
+    def taster_offen_callback(self, chip, gpio, level, tick):
         print("Taster gedrückt!")
         self.klappe_geoeffnet()
         self.servo_open()
@@ -92,7 +92,7 @@ class BriefkastenHW:
         # sag klappe geschlossen
         response = requests.post(f"{self.api}/closed", json={"serial_number": self.serial_number})
 
-    def taster_offen_callback(self, chip, gpio, level, tick):
+    def taster_geschlossen_callback(self, chip, gpio, level, tick):
         print("Taster losgelassen!")
         self.servo_close()
         self.led_off()
