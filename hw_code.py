@@ -87,6 +87,7 @@ class BriefkastenHW:
     def taster_offen_callback(self, chip, gpio, level, tick):
         print("Taster gedrückt!")
         self.klappe_geoeffnet()
+        self.servo_open()
         self.led_red()
 
     def taster_geschlossen_callback(self, chip, gpio, level, tick):
