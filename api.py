@@ -19,6 +19,9 @@ EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 entriegeln_flag = False
 entriegeln_lock = threading.Lock()
 
+offen_flag = False
+offen_lock = threading.Lock()
+
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
@@ -134,6 +137,57 @@ def frage_entriegeln():
             return jsonify({"entriegeln": True}), 200
         else:
             return jsonify({"entriegeln": False}), 200
+
+
+@app.route("/open", methods=["POST"])
+def open_klappe():
+    if not request.is_json:
+        return jsonify({"error": "expected JSON"}), 400
+    data = request.get_json()
+    serial_number = data.get("serial_number")
+    if not isinstance(serial_number, str) or not serial_number:
+        return jsonify({"error": "field 'serial_number' is required and must be a non-empty string"}), 400
+    
+    # Here you would add the code to open the klappe (flap)
+    print(f"Klappe für Serial Number {serial_number} geöffnet.")
+    
+    global offen_flag
+    with offen_lock:
+        offen_flag = True
+
+    return jsonify({"status": "klappe opened"}), 200
+
+@app.route("/close", methods=["POST"])
+def close_klappe():
+    if not request.is_json:
+        return jsonify({"error": "expected JSON"}), 400
+    data = request.get_json()
+    serial_number = data.get("serial_number")
+    if not isinstance(serial_number, str) or not serial_number:
+        return jsonify({"error": "field 'serial_number' is required and must be a non-empty string"}), 400
+    
+    # Here you would add the code to open the klappe (flap)
+    print(f"Klappe für Serial Number {serial_number} geöffnet.")
+    
+    global offen_flag
+    with offen_lock:
+        offen_flag = False
+
+    return jsonify({"status": "klappe opened"}), 200
+
+@app.route("/frage_offen", methods=["POST"])
+def frage_offen():
+    if not request.is_json:
+        return jsonify({"error": "expected JSON"}), 400
+    data = request.get_json()
+    serial_number = data.get("mac_address")
+    if not isinstance(serial_number, str) or not serial_number:
+        return jsonify({"error": "field 'mac_address' is required and must be a non-empty string"}), 400
+    
+    global offen_flag
+    with offen_lock:
+        offen = offen_flag
+        return jsonify({"offen": offen}), 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
