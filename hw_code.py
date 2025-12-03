@@ -87,14 +87,14 @@ class BriefkastenHW:
     def taster_offen_callback(self, chip, gpio, level, tick):
         print("Taster gedrückt!")
         self.klappe_geoeffnet()
-        self.servo_open()
+        self.servo_close()
         self.led_red()
         # sag klappe geschlossen
         response = requests.post(f"{self.api}/closed", json={"serial_number": self.serial_number})
 
     def taster_geschlossen_callback(self, chip, gpio, level, tick):
         print("Taster losgelassen!")
-        self.servo_close()
+        self.servo_open()
         self.led_off()
         # sag klappe offen
         response = requests.post(f"{self.api}/open", json={"serial_number": self.serial_number})
