@@ -6,6 +6,7 @@ import requests
 class BriefkastenHW:
     """Singleton-Klasse für Briefkasten Hardware-Steuerung"""
     _instance = None
+    open = False
     
     def __new__(cls):
         if cls._instance is None:
@@ -45,7 +46,7 @@ class BriefkastenHW:
         lgpio.gpio_claim_input(self.h, self.LICHTSCHRANKE_PIN)
         
         self.setup_callbacks()
-        self.servo_open()
+        #self.servo_open()
         time.sleep(1)
         self.servo_close()
         self._initialized = True
@@ -75,10 +76,12 @@ class BriefkastenHW:
         lgpio.gpio_write(self.h, self.SERVO_PIN, 0)
     
     def servo_open(self):
-        self.send_servo_pulse(1500, duration_s=0.6)
+        self.open = True
+        self.send_servo_pulse(1400, duration_s=0.6)
     
     def servo_close(self):
-        self.send_servo_pulse(600, duration_s=0.6)
+        self.open = False
+        self.send_servo_pulse(500, duration_s=0.6)
     
     def taster_callback(self, chip, gpio, level, tick):
         print("Taster gedrückt!")
