@@ -101,7 +101,7 @@ class BriefkastenHW:
         
         lgpio.callback(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE, self.taster_callback)
         lgpio.callback(self.h, self.LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE, self.lichtschranke_callback)
-    
+        print("Callbacks eingerichtet.")
     def test(self):
         while True:
             self.led_red()
