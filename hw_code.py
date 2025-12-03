@@ -7,6 +7,7 @@ class BriefkastenHW:
     """Singleton-Klasse für Briefkasten Hardware-Steuerung"""
     _instance = None
     open = False
+    taster = False # False = geschlossen
     
     def __new__(cls):
         if cls._instance is None:
@@ -99,18 +100,29 @@ class BriefkastenHW:
         self.brief_eingeworfen()
         time.sleep(2)
         self.led_off()
+
+    def taster_edge_callback(self, chip, gpio, level, tick):
+        if self.taster:
+            self.taster = False
+            print("Taster losgelassen!")
+            self.taster_offen_callback(chip, gpio, level, tick)
+        else:
+            self.taster = True
+            print("Taster gedrückt!")
+            self.taster_geschlossen_callback(chip, gpio, level, tick)
     
     def setup_callbacks(self):
-        lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE)
+        lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.EITHER_EDGE)
         lgpio.gpio_claim_alert(self.h, self.LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE)
         
         
 
-        lgpio.callback(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE, self.taster_offen_callback)
+        #lgpio.callback(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE, self.taster_offen_callback)
         lgpio.callback(self.h, self.LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE, self.lichtschranke_callback)
 
-        lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.RISING_EDGE)
-        lgpio.callback(self.h, self.TASTER_PIN, lgpio.RISING_EDGE, self.taster_geschlossen_callback)
+        lgpio.callback(self.h, self.TASTER_PIN, lgpio.EITHER_EDGE, self.taster_edge_callback)
+        #lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.RISING_EDGE)
+        #lgpio.callback(self.h, self.TASTER_PIN, lgpio.RISING_EDGE, self.taster_geschlossen_callback)
         print("Callbacks eingerichtet.")
     def test(self):
         while True:
