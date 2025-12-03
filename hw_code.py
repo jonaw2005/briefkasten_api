@@ -73,7 +73,7 @@ class BriefkastenHW:
         lgpio.gpio_write(self.h, self.SERVO_PIN, 0)
     
     def servo_open(self):
-        self.send_servo_pulse(2400, duration_s=0.6)
+        self.send_servo_pulse(1500, duration_s=0.6)
     
     def servo_close(self):
         self.send_servo_pulse(600, duration_s=0.6)
