@@ -42,6 +42,7 @@ def letters():
     if not request.is_json:
         return jsonify({"error": "expected JSON"}), 400
     data = request.get_json()
+    print(data)
     mac_address = data.get("mac_address")
     if not isinstance(mac_address, str) or not mac_address:
         return jsonify({"error": "field 'mac_address' is required and must be a non-empty string"}), 400
