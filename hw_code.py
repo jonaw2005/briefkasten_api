@@ -83,10 +83,15 @@ class BriefkastenHW:
         self.open = False
         self.send_servo_pulse(500, duration_s=0.6)
     
-    def taster_callback(self, chip, gpio, level, tick):
+    def taster_offen_callback(self, chip, gpio, level, tick):
         print("Taster gedrückt!")
         self.klappe_geoeffnet()
         self.led_red()
+
+    def taster_geschlossen_callback(self, chip, gpio, level, tick):
+        print("Taster losgelassen!")
+        self.servo_close()
+        self.led_off()
     
     def lichtschranke_callback(self, chip, gpio, level, tick):
         print("Lichtschranke unterbrochen!")
@@ -99,8 +104,13 @@ class BriefkastenHW:
         lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE)
         lgpio.gpio_claim_alert(self.h, self.LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE)
         
+        
+
         lgpio.callback(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE, self.taster_callback)
         lgpio.callback(self.h, self.LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE, self.lichtschranke_callback)
+
+        lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.RISING_EDGE)
+        lgpio.callback(self.h, self.TASTER_PIN, lgpio.RISING_EDGE, self.taster_geschlossen_callback)
         print("Callbacks eingerichtet.")
     def test(self):
         while True:
