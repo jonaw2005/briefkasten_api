@@ -106,7 +106,7 @@ class BriefkastenHW:
         
         
 
-        lgpio.callback(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE, self.taster_callback)
+        lgpio.callback(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE, self.taster_offen_callback)
         lgpio.callback(self.h, self.LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE, self.lichtschranke_callback)
 
         lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.RISING_EDGE)
