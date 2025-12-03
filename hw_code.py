@@ -106,7 +106,7 @@ class BriefkastenHW:
             self.taster = False
             print("Taster losgelassen!")
             self.taster_offen_callback(chip, gpio, level, tick)
-        else:
+        elif level == 1:
             self.taster = True
             print("Taster gedrückt!")
             self.taster_geschlossen_callback(chip, gpio, level, tick)
@@ -124,11 +124,11 @@ class BriefkastenHW:
         #lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.RISING_EDGE)
         #lgpio.callback(self.h, self.TASTER_PIN, lgpio.RISING_EDGE, self.taster_geschlossen_callback)
 
-        lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE)
         lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.RISING_EDGE)
+        lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE)
 
-        lgpio.callback(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE, lambda c, g, l, t: self.taster_edge_callback(c, g, 0, t))
-        lgpio.callback(self.h, self.TASTER_PIN, lgpio.RISING_EDGE, lambda c, g, l, t: self.taster_edge_callback(c, g, 1, t))
+        lgpio.callback(self.h, self.TASTER_PIN, lgpio.RISING_EDGE, lambda c, g, l, t: self.taster_edge_callback(c, g, 0, t))
+        lgpio.callback(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE, lambda c, g, l, t: self.taster_edge_callback(c, g, 1, t))
         print("Callbacks eingerichtet.")
     def test(self):
         while True:
