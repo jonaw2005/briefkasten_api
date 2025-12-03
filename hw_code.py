@@ -46,6 +46,8 @@ class BriefkastenHW:
         
         self.setup_callbacks()
         self.servo_open()
+        time.sleep(1)
+        self.servo_close()
         self._initialized = True
     
     def led_red(self):
