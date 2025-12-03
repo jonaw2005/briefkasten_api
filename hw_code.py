@@ -113,7 +113,7 @@ class BriefkastenHW:
             self.taster_offen_callback(chip, gpio, level, tick)
     
     def setup_callbacks(self):
-        lgpio.gpio_register_callback(self.h, self.TASTER_PIN, self.taster_edge_callback)
+        #lgpio.gpio_register_callback(self.h, self.TASTER_PIN, self.taster_edge_callback)
         #lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.EITHER_EDGE)
         lgpio.gpio_claim_alert(self.h, self.LICHTSCHRANKE_PIN, lgpio.FALLING_EDGE)
         
