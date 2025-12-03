@@ -107,9 +107,9 @@ def entriegeln():
     if not request.is_json:
         return jsonify({"error": "expected JSON"}), 400
     data = request.get_json()
-    serial_number = data.get("serial_number")
-    if not isinstance(serial_number, str) or not serial_number:
-        return jsonify({"error": "field 'serial_number' is required and must be a non-empty string"}), 400
+    mac_address = data.get("mac_address")
+    if not isinstance(mac_address, str) or not mac_address:
+        return jsonify({"error": "field 'mac_address' is required and must be a non-empty string"}), 400
     
     global entriegeln_flag
     with entriegeln_lock:
