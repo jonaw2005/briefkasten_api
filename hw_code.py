@@ -129,7 +129,7 @@ class BriefkastenHW:
         lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.BOTH_EDGES)
         #lgpio.gpio_claim_alert(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE)
 
-        lgpio.callback(self.h, self.TASTER_PIN, lgpio.BOTH_EDGES, lambda c, g, l, t: self.taster_edge_callback(c, g, 0, t))
+        lgpio.callback(self.h, self.TASTER_PIN, lgpio.BOTH_EDGES, lambda c, g, l, t: self.taster_edge_callback(c, g, l, t))
         #lgpio.callback(self.h, self.TASTER_PIN, lgpio.FALLING_EDGE, lambda c, g, l, t: self.taster_edge_callback(c, g, 1, t))
         print("Callbacks eingerichtet.")
     def test(self):
