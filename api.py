@@ -43,8 +43,10 @@ def letters():
         return jsonify({"error": "expected JSON"}), 400
     data = request.get_json()
     mac_address = data.get("mac_address")
-    if not isinstance(mac_address, str) or not re.match(r"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac_address):
-        return jsonify({"error": "field 'mac_address' is required and must be a valid MAC address"}), 400
+    if not isinstance(mac_address, str) or not mac_address:
+        return jsonify({"error": "field 'mac_address' is required and must be a non-empty string"}), 400
+    #if not isinstance(mac_address, str) or not re.match(r"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac_address):
+    #    return jsonify({"error": "field 'mac_address' is required and must be a valid MAC address"}), 400
 
     db = database_handler.DatabaseHandler()
 
