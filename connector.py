@@ -3,7 +3,7 @@ import datetime
 from hw_code import hw
 import time
 
-serial_number = "SN123456"
+serial_number = "SN987654"
 api = "http://localhost:5000"
 
 

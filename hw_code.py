@@ -19,7 +19,7 @@ class BriefkastenHW:
         
         print("hw initializing...")
 
-        self.serial_number = "SN123456"
+        self.serial_number = "SN987654"
         self.api = "http://localhost:5000"
 
 
