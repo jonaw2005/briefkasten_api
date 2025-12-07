@@ -22,7 +22,7 @@ time = "2024-06-01T12:00:00Z"
 
 
 def get_letters():
-    response = requests.post("http://192.168.3.12:5000/letters", json={
+    response = requests.post("http://192.168.5.1:5000/letters", json={
         "mac_address": mac})
     data = response.json()
     letters = data.get("letters", [])

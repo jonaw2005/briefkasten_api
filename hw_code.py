@@ -50,6 +50,10 @@ class BriefkastenHW:
         #self.servo_open()
         time.sleep(1)
         self.servo_close()
+        self.led_yellow()
+        if not self.test_connection():
+            self.led_off()
+            self.led_red()
         self._initialized = True
     
     def led_red(self):
@@ -88,7 +92,7 @@ class BriefkastenHW:
         print("Taster gedrückt!")
         self.klappe_geoeffnet()
         self.servo_close()
-        self.led_red()
+        #self.led_red()
         # sag klappe geschlossen
         response = requests.post(f"{self.api}/closed", json={"serial_number": self.serial_number})
 
@@ -104,7 +108,7 @@ class BriefkastenHW:
         self.led_green()
         self.brief_eingeworfen()
         time.sleep(2)
-        self.led_off()
+        #self.led_off()
 
     def taster_edge_callback(self, chip, gpio, level, tick):
         if level == 1:
@@ -175,5 +179,14 @@ class BriefkastenHW:
         print("Klappe wurde geöffnet.")
         return
 
+    def test_connection(self):
+        response = requests.post(f"{self.api}/status", json={})
+        print("API Status:", response.json())
+        status = response.status_code
+        if status != 200:
+            print("Fehler bei der Verbindung zur API:", status)
+            return False
+        else:
+            return True
 # Globale Instanz
 hw = BriefkastenHW()
