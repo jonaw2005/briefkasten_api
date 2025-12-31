@@ -13,7 +13,6 @@ app = Flask(__name__)
 _start_time = time.time()
 _users = {}
 
-
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 entriegeln_flag = False
@@ -23,13 +22,16 @@ offen_flag = False
 offen_lock = threading.Lock()
 
 def now_iso():
+    """Gibt die aktuelle UTC-Zeit im ISO-Format zurück."""
     return datetime.now(timezone.utc).isoformat()
+
 
 # @param route: "/status" method: POST returns if a new letter is present with a given serial number
 @app.route("/status", methods=["POST", "GET"])
 def status():
+    """Gibt einen einfachen Status aus (Version, Zeit, Uptime)."""
     if not request.is_json:
-        #return jsonify({"error": "expected JSON"}), 400
+        # Bei GET oder anderen Fällen wird einfach der Status zurückgegeben
         pass
     uptime = time.time() - _start_time
     return jsonify({
@@ -42,6 +44,7 @@ def status():
 
 @app.route("/letters", methods=["POST"])
 def letters():
+    """Erwartet JSON mit 'mac_address' und gibt die Briefliste für das zugehörige Gerät zurück."""
     if not request.is_json:
         return jsonify({"error": "expected JSON"}), 400
     data = request.get_json()
@@ -49,8 +52,6 @@ def letters():
     mac_address = data.get("mac_address")
     if not isinstance(mac_address, str) or not mac_address:
         return jsonify({"error": "field 'mac_address' is required and must be a non-empty string"}), 400
-    #if not isinstance(mac_address, str) or not re.match(r"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac_address):
-    #    return jsonify({"error": "field 'mac_address' is required and must be a valid MAC address"}), 400
 
     db = database_handler.DatabaseHandler()
 
@@ -64,6 +65,7 @@ def letters():
 
 @app.route("/register", methods=["POST"])
 def register():
+    """Registriert ein neues Gerät: erwartet 'serial_number' und 'mac_address' im JSON-Body."""
     if not request.is_json:
         return jsonify({"error": "expected JSON"}), 400
     data = request.get_json()
@@ -82,12 +84,11 @@ def register():
 
     db.create_letter_table(serial_number)
 
-
-
     return jsonify("test"), 201
 
 @app.route("/new_letter", methods=["POST"])
 def new_letter():
+    """Fügt einen neuen Brief-Eintrag zur Datenbank hinzu (erwartet 'serial_number' und 'time')."""
     if not request.is_json:
         return jsonify({"error": "expected JSON"}), 400
     data = request.get_json()
@@ -107,6 +108,7 @@ def new_letter():
 # MAC nicht Serial Number !!!!
 @app.route("/entriegeln", methods=["POST"])
 def entriegeln():
+    """Setzt das globale Flag 'entriegeln_flag' auf True für späteres Abfragen."""
     if not request.is_json:
         return jsonify({"error": "expected JSON"}), 400
     data = request.get_json()
@@ -122,6 +124,7 @@ def entriegeln():
 
 @app.route("/frage_entriegeln", methods=["POST"])
 def frage_entriegeln():
+    """Gibt den aktuellen Wert von 'entriegeln_flag' zurück und setzt ihn atomar wieder auf False, falls True."""
     if not request.is_json:
         return jsonify({"error": "expected JSON"}), 400
     data = request.get_json()
@@ -141,6 +144,7 @@ def frage_entriegeln():
 
 @app.route("/open", methods=["POST"])
 def open_klappe():
+    """Markiert die Klappe als geöffnet (setzt 'offen_flag' True) und loggt die Aktion."""
     if not request.is_json:
         return jsonify({"error": "expected JSON"}), 400
     data = request.get_json()
@@ -159,6 +163,7 @@ def open_klappe():
 
 @app.route("/close", methods=["POST"])
 def close_klappe():
+    """Markiert die Klappe als geschlossen (setzt 'offen_flag' False) und loggt die Aktion."""
     if not request.is_json:
         return jsonify({"error": "expected JSON"}), 400
     data = request.get_json()
@@ -166,17 +171,18 @@ def close_klappe():
     if not isinstance(serial_number, str) or not serial_number:
         return jsonify({"error": "field 'serial_number' is required and must be a non-empty string"}), 400
     
-    # Here you would add the code to open the klappe (flap)
-    print(f"Klappe für Serial Number {serial_number} geöffnet.")
+    # Here you would add the code to close the klappe (flap)
+    print(f"Klappe für Serial Number {serial_number} geschlossen.")
     
     global offen_flag
     with offen_lock:
         offen_flag = False
 
-    return jsonify({"status": "klappe opened"}), 200
+    return jsonify({"status": "klappe closed"}), 200
 
 @app.route("/frage_offen", methods=["POST"])
 def frage_offen():
+    """Gibt zurück, ob die Klappe aktuell als offen markiert ist (offen_flag)."""
     if not request.is_json:
         return jsonify({"error": "expected JSON"}), 400
     data = request.get_json()
